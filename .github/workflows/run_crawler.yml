@@ -3,13 +3,12 @@ name: Crawl M3U8 Stream 6h
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 */6 * * *' # Chạy tự động mỗi 6 tiếng
+    - cron: '0 */6 * * *'
 
 jobs:
   run-crawler:
     runs-on: ubuntu-latest
     
-    # Cấp quyền cho GitHub Actions có thể ghi và đẩy file mới lên repo
     permissions:
       contents: write
 
@@ -30,10 +29,16 @@ jobs:
       - name: Run Crawler Script
         run: python main.py
 
-      - name: Commit and Push results (if any changes)
+      - name: Commit and Push results (if links.json exists)
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add links.json
-          git commit -m "Auto-update stream links [skip ci]" || echo "No changes to commit"
-          git push
+          
+          # Chỉ thực hiện git add nếu file links.json thực sự tồn tại
+          if [ -f links.json ]; then
+            git add links.json
+            git commit -m "Auto-update stream links [skip ci]" || echo "No changes to commit"
+            git push
+          else
+            echo "File links.json không tồn tại, bỏ qua bước commit."
+          fi
