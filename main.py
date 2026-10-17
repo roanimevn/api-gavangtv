@@ -1,14 +1,18 @@
-import requests
+import cloudscraper
 import re
 import json
 
 def crawl_m3u8():
     url = "https://gavangtvx.com/" 
     
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Referer": "https://gavangtvx.com/"
-    }
+    # Sử dụng cloudscraper để vượt qua Cloudflare
+    scraper = cloudscraper.create_scraper(
+        browser={
+            'browser': 'chrome',
+            'platform': 'windows',
+            'desktop': True
+        }
+    )
     
     print(f"Đang bắt đầu quét link từ: {url}")
     
@@ -16,7 +20,7 @@ def crawl_m3u8():
     status_msg = "Success"
     
     try:
-        response = requests.get(url, headers=headers, timeout=15)
+        response = scraper.get(url, timeout=15)
         print(f"Mã phản hồi từ server: {response.status_code}")
         
         if response.status_code == 200:
@@ -34,7 +38,7 @@ def crawl_m3u8():
         status_msg = f"Exception: {str(e)}"
         print(f"Lỗi trong quá trình cào dữ liệu: {e}")
         
-    # LUÔN LUÔN tạo file links.json (dù thành công hay lỗi) để GitHub luôn có file push lên
+    # Ghi file kết quả
     result_data = {
         "target_url": url,
         "status": status_msg,
@@ -48,4 +52,3 @@ def crawl_m3u8():
 
 if __name__ == "__main__":
     crawl_m3u8()
-
